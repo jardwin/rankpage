@@ -21,6 +21,12 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(0.0375, data['toto.com'])
         self.assertEqual(0.9625, data['titi.com'])
 
+    def test_rank_two_entry_with_ref_three_iteration(self):
+        data = {"toto.com":0.5,"titi.com":0.5}
+        main.iterate_rank(3, data, [["toto.com", "titi.com"]])
+        self.assertEqual(0.0002109375, data['toto.com'])
+        self.assertEqual(0.9997890625, data['titi.com'])
+
     def test_rank_three_entry_with_ref(self):
         data = {"toto.com":1/3,"titi.com":1/3,"tata.com":1/3}
         main.iterate_rank(1, data, [["toto.com", "titi.com"],["toto.com", "tata.com"]])
