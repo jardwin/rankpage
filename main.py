@@ -1,10 +1,25 @@
 import csv
+import sys
 
 def rank(url_set, url_link):
     for url in url_set:
-        link_to_me = list(filter(lambda x: x[1] == url, url_link))
-        for link in link_to_me:
-            url_set[url] += (url_set[link[0]]*0.85)/len(list(filter(lambda x: x[0] == link[0], url_link)))
+        for link in findLinkToMe(url_link, url):
+            url_set[url] += (url_set[link[0]]*0.85)/countLinkFromMe(url_link, link[0])
+
+def findLinkToMe(urlLinks, me):
+    linked = []
+    for url in urlLinks:
+        if url[1] == me and me not in linked:
+            linked.append(url)
+    return linked
+
+def countLinkFromMe(urlLinks, me):
+    cmp = 0
+    for url in urlLinks:
+        if url[0] == me:
+            cmp+=1
+    return cmp
+
 
 def iterate_rank(n, set, link):
     for _ in range(0,n):
@@ -14,30 +29,27 @@ def iterate_rank(n, set, link):
             distribut_rank(set, link)
 
 def reduce_rank(set, links):
-    filtered = []
+    alreadyDone = []
     for link in links:
-        if next((x for x in filtered if x == link[0]), None) is None:
-            filtered.append(link[0])
-
-    for page in filtered:
-        set[page]=set[page]*0.15
+        if link[0] not in alreadyDone:
+            set[link[0]]=set[link[0]]*0.15
+            alreadyDone.append(link[0])
 
 def distribut_rank(set, links):
-    def toto(x):
-        val = set[x[0]]
-        set[x[0]]=0
-        return val
-    rest = sum(list(map(toto, links)))
+    rest = 0
+    for link in links:
+        rest+=set[link[0]]
+        set[link[0]]=0
     for page in set:
         set[page]+=rest/len(set)
 
 def create_set_from_link(links):
     filtered = {}
     for link in links:
-        if next((x for x in filtered if x == link[0]), None) is None:
+        if link[0] not in filtered:
             filtered[link[0]] = 0
-        if next((x for x in filtered if x == link[1]), None) is None:
-            filtered[link[0]] = 0
+        if link[1] not in filtered:
+            filtered[link[1]] = 0
 
     for page in filtered:
         filtered[page]=1/len(filtered)
@@ -51,3 +63,10 @@ def read_csv_return_tuple_array(path):
         for row in reader:
             result.append([row[0], row[1]])
     return result
+
+if len(sys.argv) > 2:
+    result = read_csv_return_tuple_array(sys.argv[1])
+    data = create_set_from_link(result)
+    iterate_rank(int(sys.argv[2]), data, result)
+    # for link, score in data.items():
+    #     print("{:<8} {:<15}".format(link, score))

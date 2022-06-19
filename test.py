@@ -48,11 +48,17 @@ class TestUtils(unittest.TestCase):
         self.assertEqual("http://toto.com", result[0][0])
         self.assertEqual("http://titi.com", result[0][1])
 
+    def test_create_set_from_link(self):
+        set = main.create_set_from_link([["AAA", "BBB"],["BBB", "CCC"],["AAA", "CCC"]])
+        self.assertEqual(1/3,set["AAA"])
+        self.assertEqual(1/3,set["BBB"])
+        self.assertEqual(1/3,set["CCC"])
+        
     def test_full(self):
         result = main.read_csv_return_tuple_array("./dataset.csv")
         data = main.create_set_from_link(result)
         main.iterate_rank(1, data, result)
-        self.assertEqual(0.00024011287080542975,data["CGO"])
+        self.assertEqual(0.00023853366999338602,data["CGO"])
 
 if __name__ == '__main__':
     unittest.main()
