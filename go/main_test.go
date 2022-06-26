@@ -1,6 +1,8 @@
 package main
 
-import ("testing" 
+import (
+	"fmt"
+	"testing" 
 "sort")
 
 func TestReadCsv(t *testing.T){
@@ -53,24 +55,30 @@ func Test_rank_two_entry_unref(t *testing.T){
 func Test_rank_two_entry_with_ref(t *testing.T){
 	data := map[string]float32{"toto.com":0.5,"titi.com":0.5}
 	iterate_rank(1,data, [][]string{{"toto.com", "titi.com"}})
+	var toto float32 = 0.0375
+	var titi float32 = 0.9625
 
-	if data["toto.com"] != 0.0375{
-		t.Fatalf("toto.com has not the good score, exepted : %f , actual : %f", 0.0375, data["toto.com"])
+	if fmt.Sprintf("%f",data["toto.com"]) != fmt.Sprintf("%f",toto){
+		t.Fatalf("toto.com has not the good score, exepted : %f , actual : %f", toto, data["toto.com"])
 	}
 
-	if data["titi.com"] != 0.9625{
-		t.Fatalf("titi.com has not the good score, exepted : %f , actual : %f", 0.9625, data["titi.com"])
+	if  fmt.Sprintf("%f",data["titi.com"]) != fmt.Sprintf("%f",titi){
+		t.Fatalf("titi.com has not the good score, exepted : %f , actual : %f", titi, data["titi.com"])
 	}
 }
 
 func Test_rank_two_entry_with_ref_three_iteration(t *testing.T){
 	data := map[string]float32{"toto.com":0.5,"titi.com":0.5}
 	iterate_rank(3, data, [][]string{{"toto.com", "titi.com"}})
-	if data["toto.com"] != 0.0002109375{
-		t.Fatalf("toto.com has not the good score, exepted : %f , actual : %f", 0.0002109375, data["toto.com"])
+	var toto float32 = 0.0002109375
+	var titi float32 = 0.9997890625
+
+	if fmt.Sprintf("%f",data["toto.com"]) != fmt.Sprintf("%f",toto){
+		t.Fatalf("toto.com has not the good score, exepted : %f , actual : %f", toto, data["toto.com"])
 	}
-	if data["titi.com"] != 0.9997890625{
-		t.Fatalf("titi.com has not the good score, exepted : %f , actual : %f", 0.9997890625, data["titi.com"])
+
+	if fmt.Sprintf("%f",data["titi.com"]) != fmt.Sprintf("%f",titi){
+		t.Fatalf("titi.com has not the good score, exepted : %f , actual : %f", titi, data["titi.com"])
 	}
 }
 
@@ -93,6 +101,4 @@ func TestSortLink(t *testing.T){
 	if data[4][0] != "c"{
 		t.Fatal("the five element may be a C")
 	}
-
-
 }

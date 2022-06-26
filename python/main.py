@@ -70,3 +70,8 @@ if len(sys.argv) > 2:
     iterate_rank(int(sys.argv[2]), data, result)
     # for link, score in data.items():
     #     print("{:<8} {:<15}".format(link, score))
+    with open("./result.csv", "w") as f:
+        writer = csv.writer(f, delimiter=';')
+        writer.writerow(["url", "note"])
+        for page in data:
+            writer.writerow([page, data[page]])

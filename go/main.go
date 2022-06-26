@@ -3,13 +3,13 @@ package main
 import (
     "encoding/csv"
     "fmt"
-    //"log"
+    "strconv"
     "sort"
     "os")
 
 func main(){
-    if len(os.Args) < 2 {
-        fmt.Println("Pas de chemin passer")
+    if len(os.Args) < 3 {
+        fmt.Println("Pas de chemin passer ou de nombre d'iteration")
         return
     }
 
@@ -17,10 +17,22 @@ func main(){
     
     set := create_set_from_link(data)
 
-    //rank(set,data)
+    i, err := strconv.Atoi(os.Args[2])
+    if err != nil{
+        fmt.Println("Con't read the number of iteration")   
+        return
+    }
+    iterate_rank(i, set, data)
 
-    for k, v := range set{
-        fmt.Println(k," => ",v)
+    f, err := os.Create("result.csv")
+    defer f.Close()
+
+    var csvWriter = csv.NewWriter(f)
+    csvWriter.Comma = ';'
+    csvWriter.Write([]string{"url", "note"})
+
+    for url, val := range set{
+        csvWriter.Write([]string{url, fmt.Sprintf("%f", val)})
     }
 }
 
@@ -60,14 +72,29 @@ func create_set_from_link(links [][]string) map[string]float32{
         filtered[k]=1.0/float32(len(filtered))
     }
     return filtered
+    
 }
 
 func rank(url_set map[string]float32, url_link [][]string) float32{
-    for url, _ := range url_set{
-        for _,link := range findLinkToMe(url_link, url){
-            url_set[url] += (url_set[link[0]]*0.85)/float32(countLinkFromMe(url_link, link[0]))
-        }
+    rest := float32(0)
+    prevUrl := ""
+    if len(url_link) != 0{
+        prevUrl = url_link[0][0]
     }
+    for _, url := range url_link{
+        if prevUrl != url[0]{
+            rest += url_set[prevUrl]*0.15
+            url_set[prevUrl]*=0.15
+        }
+        url_set[url[1]] += (url_set[url[0]]*0.85)/float32(countLinkFromMe(url_link, url[0]))
+        prevUrl = url[0]
+    }
+    if len(url_link) != 0{
+        rest += url_set[prevUrl]*0.15
+        url_set[prevUrl]*=0.15
+    }
+
+    return rest
 }
 
 type byFrom [][]string
@@ -79,19 +106,28 @@ func (a byFrom) Less(i, j int) bool { return a[i][0] < a[j][0] }
 func iterate_rank(n int, set map[string]float32, link[][]string){
     sort.Sort(byFrom(link))
     for i := 0; i < n; i++ {
-        rest = rank(set, link)
-        if len(link)!=0{
-            distribut_rank(set, link)
-        }
+        rest := rank(set, link)
+        rest += reduceUnrefPage(set, link)
+        distribut_rank(set, rest)
     }
 }
 
-func distribut_rank(set map[string]float32, links [][]string){
+func reduceUnrefPage(set map[string]float32, links [][]string) float32{
     rest := float32(0)
-    for _, link := range links{
-        rest+=float32(set[link[0]])
-        set[link[0]]=0
+    for url, _ := range set{
+        if !findElementInDoubleArrayAtOne(links, url) && !findElementInDoubleArray(links, url){
+            rest += set[url]
+            set[url] = 0
+        }
+
+        if findElementInDoubleArrayAtOne(links, url) && !findElementInDoubleArray(links, url){
+            set[url] = 0
+        }
     }
+    return rest
+}
+
+func distribut_rank(set map[string]float32, rest float32){
     for page, _ := range set{
         set[page]+=rest/float32(len(set))
     }
@@ -120,6 +156,15 @@ func countLinkFromMe(urlLinks [][]string, me string) int{
 func findElementInDoubleArray(arr [][]string, element string) bool{
     for _, val := range arr{
         if val[1] == element{
+            return true
+        }
+    }
+    return false
+}
+
+func findElementInDoubleArrayAtOne(arr [][]string, element string) bool{
+    for _, val := range arr{
+        if val[0] == element{
             return true
         }
     }
