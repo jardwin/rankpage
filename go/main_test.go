@@ -82,6 +82,17 @@ func Test_rank_two_entry_with_ref_three_iteration(t *testing.T){
 	}
 }
 
+func Test_full(t *testing.T){
+	result := read_csv_return_tuple_array("../dataset.csv")
+	data := create_set_from_link(result)
+	iterate_rank(1, data, result)
+	var titi float32 = 0.001787
+
+	if fmt.Sprintf("%f",data["CGO"]) != fmt.Sprintf("%f",titi){
+		t.Fatalf("CGO has not the good score, exepted : %f , actual : %f", titi, data["CGO"])
+	}
+}
+
 func TestSortLink(t *testing.T){
 	data := [][]string{{"b","a"},{"c","a"},{ "b", "c"},{"a","b"},{"b","d"}}
 	sort.Sort(byFrom(data))
